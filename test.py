@@ -30,26 +30,32 @@ def update(days):
         print(episode)
 
 if __name__ == "__main__":
-    days=60
-    number=500
+    days=90
+    number=90
     coti = ColdTime(days)
     env = Environment()
     illtime = np.zeros((1, number * (days - 30)))
-    RL = q_learning_model(actions=list(range(env.n_actions)))
+    RL = q_learning_model(actions=list(range(env.n_actions)),e_greedy=0.8)
+    RL_test = q_learning_model(actions=list(range(env.n_actions)), e_greedy=1)
     for n in range(days-30):
         for m in range(number):
             illtime[0][n+m] = coti.getilltime_m()[n]
-    testtime=np.zeros((1,30))
+    testtime=np.zeros((1,31))
     for n in range(30):
         testtime[0][n]=coti.getilltime_m()[30+n]
+    testtime[0][30]=0
     s = np.zeros((1, 4),int)
     update(days-30)
 
+    s[0]=[9,5,5,0]
+    s_ = np.zeros((1, 4), int)
     Delay = 0
     Energy = 0
-    Energy += s[0][1] / (s[0][1] + s[0][2])
     for n in range(30):
-        if s[0][0] <= testtime[0][n] < s[0][0] + 1:
+        if 9 <= testtime[0][n] < 10:
+            s[0][3] = 1
+        Energy += s[0][1] / (s[0][1] + s[0][2])
+        if s[0][3]==1:
             for i in range(3600):
                 if (s[0][1] + s[0][2]) * i <= (testtime[0][n] - 9) * 3600 < (s[0][1] + s[0][2]) * (i + 1):
                     if (s[0][1] + s[0][2]) * i <= (testtime[0][n] - 9) * 3600 < (s[0][1] + s[0][2]) * i + s[0][
@@ -57,5 +63,9 @@ if __name__ == "__main__":
                         Delay = Delay + 0
                     else:
                         Delay += (s[0][1] + s[0][2]) * (i + 1) - (testtime[0][n] - 9) * 3600
+        while True:
+            action = RL_test.choose_action(str(s[0]))
+            s[0][1],s[0][2], is_pass = env.change(s[0][1], s[0][2], action)  # 执行这个动作得到反馈
+            break
     result = math.sqrt(Energy + Delay / 10)
     print(result)

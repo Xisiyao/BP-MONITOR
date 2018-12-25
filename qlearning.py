@@ -3,7 +3,7 @@ import numpy as np
 
 
 class q_learning_model:
-    def __init__(self, actions, e_greedy=0.8,learning_rate=0.01, reward_decay=0.9):
+    def __init__(self, actions, e_greedy,learning_rate=0.01, reward_decay=0.9):
         self.actions = actions
         self.learning_rate = learning_rate
         self.reward_decay = reward_decay
