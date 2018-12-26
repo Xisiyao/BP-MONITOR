@@ -13,13 +13,13 @@ class Environment:
                 if (n_on+n_off)*m<=(illtime-T)*3600<(n_on+n_off)*(m+1):
                     if (n_on+n_off)*m<=(illtime-T)*3600<(n_on+n_off)*m+n_on:
                         delay=0
-                        r=energy
+                        r=1-energy
                     else:
                         delay=(n_on+n_off)*(m+1)-(illtime-T)*3600
                         if delay <=2:
                             r = 0
                         else:
-                            r = -1+energy
+                            r = -delay+2+energy
                     break
         else:
             r=0.5-energy
