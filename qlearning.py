@@ -32,6 +32,16 @@ class q_learning_model:
             action = np.random.choice(self.actions)
         return action
 
+    def test_choose_action(self, s, e_greedy):
+        if np.random.uniform() < e_greedy:
+            state_action = self.q_table.ix[s, :]
+            state_action = state_action.reindex(np.random.permutation(state_action.index))  # 防止相同列值时取第一个列，所以打乱列的顺序
+            action = state_action.idxmax()
+            rmax = state_action.max()
+        else:
+            action = np.random.choice(self.actions)
+        return action, rmax
+
     # 更新q表
     def rl(self, s, a, r, s_):
         self.check_state_exist(s_)
