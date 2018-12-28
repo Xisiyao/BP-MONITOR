@@ -21,8 +21,9 @@ class Environment:
                         else:
                             r = -delay+2+energy
                     break
-        else:
-            r=0.5-energy
+        '''else:
+            r=0.5-energy'''
+        r=0
         return r
 
     #根据动作改变状态

@@ -15,7 +15,7 @@ def update(days):
             if T<=illtime[0][days_number]<T+1:
                 s[0][3]=1
             while True:
-                action= RL.choose_action(str(s[0]),0.7)
+                action= RL.choose_action(str(s[0]),0.99)
                 s_[0][1],s_[0][2],is_pass= env.change(s[0][1],s[0][2],action) # 执行这个动作得到反馈（下一个状态s 奖励r ）
                 if T <= illtime[0][days_number+1] < T+1:
                     s_[0][3] = 1
@@ -32,6 +32,7 @@ def update(days):
 
 def testresult():
     result=0
+    action=[0]*60
     is_pass=0
     s[0]=[T,5,5,0]
     s_ = np.zeros((1, 4), int)
@@ -50,15 +51,15 @@ def testresult():
                 else:
                     Delay += (s[0][1] + s[0][2]) * (i + 1) - (illtime[0][n] - T) * 3600'''
         while True:
-            action,rmax=RL.test_choose_action(str(s[0]),1)
+            action[n],rmax=RL.test_choose_action(str(s[0]),1)
             if is_pass == 1:
                 result += rmax
             else:
                 result += rmax
-            s[0][1], s[0][2], is_pass = env.change(s[0][1], s[0][2], action)  # 执行这个动作得到反馈
+            s[0][1], s[0][2], is_pass = env.change(s[0][1], s[0][2], action[n])  # 执行这个动作得到反馈
             break
     '''result = math.sqrt(Energy + Delay)'''
-    return result
+    return action
 
 if __name__ == "__main__":
     days=120
@@ -74,15 +75,16 @@ if __name__ == "__main__":
         testtime[0][n]=coti.getilltime_m()[days-60+n]
     testtime[0][60]=0
     s = np.zeros((1, 4),int)
-    V=[0]*6
+    V=np.zeros((6,60))
     x=[1,2,3,4,5,6]
     for times in range(6):
-        number=200*(times+1)
+        number=120*(times+1)
         RL = q_learning_model(actions=list(range(env.n_actions)))
         update(days-60)
         V[times]=testresult()
-    plt.plot(x, V)
+    print(V)
+    '''plt.plot(x, V)
     plt.xlabel('times')
     plt.ylabel('Result')
     plt.title("Let's see what happens")
-    plt.show()
+    plt.show()'''

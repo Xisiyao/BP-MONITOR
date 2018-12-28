@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 class ColdTime:
     def __init__(self,number):
         self.number=number
-        np.random.seed(0)
+        '''np.random.seed(0)'''
         #上午
         self.mu = 12
         self.sigma = 1
