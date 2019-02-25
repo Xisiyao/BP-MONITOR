@@ -8,7 +8,9 @@ import math
 def update(days):
     s_ = np.zeros((1, 4), int)
     Reward = 0
+    delay=0
     for episode in range(0,episode_number):
+
         for n in range(0, 24):
             s[n] = [n , 5, 5, -1]
         for days_number in range(days):
@@ -67,10 +69,11 @@ def update(days):
                         r = 0
                     else:
                         if n == 23:
-                            r = env.reward(days_number,0, s_[0][1], s_[0][2], s_[0][3], illpoint)
+                            r,d = env.reward(days_number,0, s_[0][1], s_[0][2], s_[0][3], illpoint)
                         else:
-                            r = env.reward(days_number,n+1, s_[0][1], s_[0][2], s_[0][3], illpoint)
+                            r,d = env.reward(days_number,n+1, s_[0][1], s_[0][2], s_[0][3], illpoint)
                     Reward=Reward+r
+                    delay=delay+d
                     RL.rl(str(s[n]), action, r, str(s_[0])) # 更新状态
                     if n==23:
                         n=-1
@@ -78,13 +81,25 @@ def update(days):
                     s[n+1][2] = s_[0][2]
                     s[n+1][3] = s_[0][3]
                     break
-        print(episode)
-    Reward=Reward/episode_number
-    print(Reward)
+        y[0][episode] = delay/(episode+1)
+        print(episode,",",y[0][episode])
+    plt.plot(x[0], y[0])
+    plt.xlim(right=301, left=0)
+    plt.ylim(top=150, bottom=80)
+    plt.xlabel('Episode')
+    plt.ylabel('Average Reward')
+    plt.title('Number of Episode=300')
+    plt.show()
+
+
 
 if __name__ == "__main__":
     days=60
-    episode_number=200
+    episode_number=300
+    x = np.zeros((1, episode_number))
+    for i in range(episode_number):
+        x[0][i] = i + 1
+    y = np.zeros((1, episode_number))
     coti = ColdTime(days)
     getilltime=coti.getilltime()
     env=Environment()
@@ -174,19 +189,15 @@ if __name__ == "__main__":
 
 
     #画学习结果
-    '''x= np.zeros((1, 12))
-    y = np.zeros((1, 12))
+    '''
     for n in range(0,12):
         x[0][n]=s[n][0]
         y[0][n]=s[n][1]/(s[n][1]+s[n][2])
-    plt.plot(x[0],y[0])
-    plt.xlabel('Ti')
-    plt.ylabel('Duty Cycle')
-    plt.title('Number of Episode=60')
+    
 
     #画病人发病时间
-    coti.drawing()
-    plt.show()'''
+    coti.drawing()'''
+
 
 
 

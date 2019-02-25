@@ -8,6 +8,7 @@ class Environment:
     #奖赏函数
     def reward(self,day,T,n_on,n_off,s,illtime):
         illtime=illtime-day*3600*24
+        delay = 0
         energy=n_on/(n_on+n_off)
         if s==4:
             for m in range(3600):
@@ -16,7 +17,7 @@ class Environment:
                         delay=0
                         re=1-energy
                     else:
-                        delay=(n_on+n_off)*(m+1)-illtime-T*3600
+                        delay=(n_on+n_off)*(m+1)-(illtime-T*3600)
                         if delay <=2:
                             re = 0
                         else:
@@ -24,7 +25,7 @@ class Environment:
                     break
         else:
             re = 1 - energy
-        return re
+        return re,delay
 
     #根据动作改变状态
     def change(self, n_on,n_off,action):
