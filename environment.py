@@ -6,25 +6,25 @@ class Environment:
         self.n_actions = len(self.action_space)
 
     #奖赏函数
-    def reward(self,T,n_on,n_off,is_ill,illtime):
+    def reward(self,day,T,n_on,n_off,s,illtime):
+        illtime=illtime-day*3600*24
         energy=n_on/(n_on+n_off)
-        if is_ill==1:
+        if s==4:
             for m in range(3600):
-                if (n_on+n_off)*m<=(illtime-T)*3600<(n_on+n_off)*(m+1):
-                    if (n_on+n_off)*m<=(illtime-T)*3600<(n_on+n_off)*m+n_on:
+                if (n_on+n_off)*m<=illtime-T*3600<(n_on+n_off)*(m+1):
+                    if (n_on+n_off)*m<=illtime-T*3600<(n_on+n_off)*m+n_on:
                         delay=0
-                        r=1-energy
+                        re=1-energy
                     else:
-                        delay=(n_on+n_off)*(m+1)-(illtime-T)*3600
+                        delay=(n_on+n_off)*(m+1)-illtime-T*3600
                         if delay <=2:
-                            r = 0
+                            re = 0
                         else:
-                            r = -delay+2+energy
+                            re = -delay+2+energy
                     break
-        '''else:
-            r=0.5-energy'''
-        r=0
-        return r
+        else:
+            re = 1 - energy
+        return re
 
     #根据动作改变状态
     def change(self, n_on,n_off,action):

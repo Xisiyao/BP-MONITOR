@@ -1,13 +1,14 @@
 import pandas as pd
 import numpy as np
+import math
 
 
 class q_learning_model:
-    def __init__(self, actions,learning_rate=0.01, reward_decay=0.9):
+    def __init__(self, actions,e_greedy=0.99,learning_rate=0.01, reward_decay=0.9):
         self.actions = actions
         self.learning_rate = learning_rate
         self.reward_decay = reward_decay
-        '''self.e_greedy = e_greedy'''
+        self.e_greedy = e_greedy
         self.q_table = pd.DataFrame(columns=actions, dtype=np.float32)
 
     # 检查状态是否存在
@@ -22,9 +23,9 @@ class q_learning_model:
             )
 
     # 选择动作e
-    def choose_action(self, s,e_greedy):
+    def choose_action(self, s,episode):
         self.check_state_exist(s)
-        if np.random.uniform() < e_greedy:
+        if np.random.uniform() <self. e_greedy*math.exp(-1/(episode+1)):
             state_action = self.q_table.ix[s, :]
             state_action = state_action.reindex(np.random.permutation(state_action.index))  # 防止相同列值时取第一个列，所以打乱列的顺序
             action = state_action.idxmax()
@@ -32,8 +33,8 @@ class q_learning_model:
             action = np.random.choice(self.actions)
         return action
 
-    def test_choose_action(self, s, e_greedy):
-        if np.random.uniform() < e_greedy:
+    def test_choose_action(self, s):
+        if np.random.uniform() < self.e_greedy:
             state_action = self.q_table.ix[s, :]
             state_action = state_action.reindex(np.random.permutation(state_action.index))  # 防止相同列值时取第一个列，所以打乱列的顺序
             action = state_action.idxmax()

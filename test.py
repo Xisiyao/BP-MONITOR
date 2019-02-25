@@ -6,85 +6,41 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 
-def update(days):
-    s_ = np.zeros((1, 4), int)
-    for episode in range(0,number):
-        s[0] = [T, 5, 5, 0]
-        for days_number in range(days-1):
-            s_[0] = [T,0,0,0]
-            if T<=illtime[0][days_number]<T+1:
-                s[0][3]=1
-            while True:
-                action= RL.choose_action(str(s[0]),0.99)
-                s_[0][1],s_[0][2],is_pass= env.change(s[0][1],s[0][2],action) # 执行这个动作得到反馈（下一个状态s 奖励r ）
-                if T <= illtime[0][days_number+1] < T+1:
-                    s_[0][3] = 1
-                if is_pass==1:
-                    r = env.reward(T, s_[0][1], s_[0][2], s_[0][3], illtime[0][days_number + 1])
-                else:
-                    r=env.reward(T,s_[0][1],s_[0][2],s_[0][3],illtime[0][days_number+1])
-                RL.rl(str(s[0]), action, r, str(s_[0])) # 更新状态表
-                s[0][1] = s_[0][1]
-                s[0][2] = s_[0][2]
-                s[0][3] = s_[0][3]
-                break
-        print(episode)
-
-def testresult():
-    result=0
-    action=[0]*60
-    is_pass=0
-    s[0]=[T,5,5,0]
-    s_ = np.zeros((1, 4), int)
-    Delay = 0
-    Energy = 0
-    for n in range(60):
-        if T <= illtime[0][n] < T+1:
-            s[0][3] = 1
-            '''Energy += s[0][1] / (s[0][1] + s[0][2])
-    if s[0][3]==1:
+avg=np.array([-4,3,1,3,4,4,4,3,-2,-2,-4,-2,-2,0,-1,3,3,3,3,-3,-2,-4,-5,-3])
+time= np.zeros(24*3600)
+for h in range(24):
+    for sec in range(3600):
+        time[h*3600+sec] = h+sec/3600
+number = 60
+np.random.seed(0)
+mu = 0
+sigma = 1
+xl= np.zeros((number, 24*3600))
+for m in range(number):
+    for n in range(24):
         for i in range(3600):
-            if (s[0][1] + s[0][2]) * i <= (illtime[0][n] - T) * 3600 < (s[0][1] + s[0][2]) * (i + 1):
-                if (s[0][1] + s[0][2]) * i <= (illtime[0][n] - T) * 3600 < (s[0][1] + s[0][2]) * i + s[0][
-                    1]:
-                    Delay = Delay + 0
-                else:
-                    Delay += (s[0][1] + s[0][2]) * (i + 1) - (illtime[0][n] - T) * 3600'''
-        while True:
-            action[n],rmax=RL.test_choose_action(str(s[0]),1)
-            if is_pass == 1:
-                result += rmax
+            data = np.random.normal(mu,sigma, 1)
+            if m==0 and n+i==0:
+                xl[m][n] = 130 + 1*data
             else:
-                result += rmax
-            s[0][1], s[0][2], is_pass = env.change(s[0][1], s[0][2], action[n])  # 执行这个动作得到反馈
-            break
-    '''result = math.sqrt(Energy + Delay)'''
-    return action
+                if n+i==0:
+                    if avg[n] >= 0:
+                        v = 5 * (160 - xl[m-1][24*3600-1]) / (160*3600)
+                    else:
+                        v = 3 * (xl[m-1][24*3600-1] - 110) / (110*3600)
+                    xl[m][n] = xl[m-1][24*3600-1]+avg[n]*v +1*data/50
+                else:
+                    if avg[n] >= 0:
+                        v = 5 * (160 - xl[m][n*3600-1+i]) / (160*3600)
+                    else:
+                        v = 3 * (xl[m][n*3600-1+i] - 110) /(110*3600)
+                    xl[m][n*3600+i] = xl[m][n*3600-1+i]+avg[n]*v +  1*data/50
+plt.title("Change of Blood Pressure")
+plt.xlim(right=24,left=0)
+plt.ylim(top=180,bottom=100)
+plt.xlabel("Time")
+plt.ylabel("Systolic BP")
+for i in range(number):
+     plt.plot(time,xl[i])
+plt.show()
 
-if __name__ == "__main__":
-    days=120
-    number=0
-    T=11
-    coti = ColdTime(days)
-    env = Environment()
-    illtime = np.zeros((1, (days - 60)))
-    for n in range(days-60):
-        illtime[0][n] = coti.getilltime_m()[n]
-    testtime=np.zeros((1,61))
-    for n in range(60):
-        testtime[0][n]=coti.getilltime_m()[days-60+n]
-    testtime[0][60]=0
-    s = np.zeros((1, 4),int)
-    V=np.zeros((6,60))
-    x=[1,2,3,4,5,6]
-    for times in range(6):
-        number=120*(times+1)
-        RL = q_learning_model(actions=list(range(env.n_actions)))
-        update(days-60)
-        V[times]=testresult()
-    print(V)
-    '''plt.plot(x, V)
-    plt.xlabel('times')
-    plt.ylabel('Result')
-    plt.title("Let's see what happens")
-    plt.show()'''
