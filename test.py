@@ -28,16 +28,16 @@ for m in range(number):
                         v = 5 * (160 - xl[m-1][24*3600-1]) / (160*3600)
                     else:
                         v = 3 * (xl[m-1][24*3600-1] - 110) / (110*3600)
-                    xl[m][n] = xl[m-1][24*3600-1]+avg[n]*v +1*data/50
+                    xl[m][n] = xl[m-1][24*3600-1]+avg[n]*v +1*data/30
                 else:
                     if avg[n] >= 0:
                         v = 5 * (160 - xl[m][n*3600-1+i]) / (160*3600)
                     else:
                         v = 3 * (xl[m][n*3600-1+i] - 110) /(110*3600)
-                    xl[m][n*3600+i] = xl[m][n*3600-1+i]+avg[n]*v +  1*data/50
+                    xl[m][n*3600+i] = xl[m][n*3600-1+i]+avg[n]*v +  1*data/30
 plt.title("Change of Blood Pressure")
 plt.xlim(right=24,left=0)
-plt.ylim(top=180,bottom=100)
+plt.ylim(top=160,bottom=110)
 plt.xlabel("Time")
 plt.ylabel("Systolic BP")
 for i in range(number):

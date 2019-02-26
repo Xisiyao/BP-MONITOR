@@ -81,20 +81,20 @@ def update(days):
                     s[n+1][2] = s_[0][2]
                     s[n+1][3] = s_[0][3]
                     break
-        y[0][episode] = delay/(episode+1)
+        y[0][episode] =  delay/(episode+1)
         print(episode,",",y[0][episode])
     plt.plot(x[0], y[0])
     plt.xlim(right=301, left=0)
-    plt.ylim(top=150, bottom=80)
+    plt.ylim(top=6, bottom=0)
     plt.xlabel('Episode')
-    plt.ylabel('Average Reward')
+    plt.ylabel('Average Delay')
     plt.title('Number of Episode=300')
     plt.show()
 
 
 
 if __name__ == "__main__":
-    days=60
+    days=32
     episode_number=300
     x = np.zeros((1, episode_number))
     for i in range(episode_number):
