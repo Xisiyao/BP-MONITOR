@@ -5,42 +5,48 @@ import pandas as pd
 import numpy as np
 import math
 import matplotlib.pyplot as plt
+import time
 
-avg=np.array([-4,3,1,3,4,4,4,3,-2,-2,-4,-2,-2,0,-1,3,3,3,3,-3,-2,-4,-5,-3])
-time= np.zeros(24*3600)
-for h in range(24):
-    for sec in range(3600):
-        time[h*3600+sec] = h+sec/3600
-number = 60
+number=180
+seconds=6
 np.random.seed(0)
 mu = 0
 sigma = 1
-xl= np.zeros((number, 24*3600))
+xl = np.zeros((number, seconds*24))
+time=np.zeros(24*seconds)
+for i in range(24*seconds):
+    time[i]=i/seconds
+
+def oneday(x,variation):
+    y=5.819e-06*math.pow(x,7)- 0.0004894*math.pow(x,6)+ 0.0158*math.pow(x,5)  - 0.2419 *math.pow(x,4)+ 1.713 *math.pow(x,3)  - 4.118 *math.pow(x,2)- 1.086 *math.pow(x,1)  +  132+variation
+    return y
+
+def daybyday(number):
+    x=number/30
+    y = 0.04236* math.pow(x, 6)- 0.6854* math.pow(x, 5) + 3.934 * math.pow(x,4) - 9.281  * math.pow(x, 3)+ 7.024 * math.pow(x, 2)+ 1.967  * math.pow(x, 1)- 2.578e-13
+    return y
+
+data=0
 for m in range(number):
+    data = np.random.normal(mu, sigma, 1)
+    variation=daybyday(m)+data/2
     for n in range(24):
-        for i in range(3600):
-            data = np.random.normal(mu,sigma, 1)
-            if m==0 and n+i==0:
-                xl[m][n] = 130 + 1*data
-            else:
-                if n+i==0:
-                    if avg[n] >= 0:
-                        v = 5 * (160 - xl[m-1][24*3600-1]) / (160*3600)
-                    else:
-                        v = 3 * (xl[m-1][24*3600-1] - 110) / (110*3600)
-                    xl[m][n] = xl[m-1][24*3600-1]+avg[n]*v +1*data/30
-                else:
-                    if avg[n] >= 0:
-                        v = 5 * (160 - xl[m][n*3600-1+i]) / (160*3600)
-                    else:
-                        v = 3 * (xl[m][n*3600-1+i] - 110) /(110*3600)
-                    xl[m][n*3600+i] = xl[m][n*3600-1+i]+avg[n]*v +  1*data/30
+        for i in range(seconds):
+            data = np.random.normal(mu, sigma, 1)
+            xl[m][n*seconds+i]=oneday(n+i/seconds,variation)+data*2.5
+
+i = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24]
+y_=np.zeros(25)
+for x in range(25):
+    y_[x] = 0 * math.pow(x, 8) + 5.819e-06 * math.pow(x, 7) - 0.0004894 * math.pow(x, 6) + 0.0158 * math.pow(x,5) - 0.2419 * math.pow(x, 4) + 1.713 * math.pow(x, 3) - 4.118 * math.pow(x, 2) - 1.086 * math.pow(x, 1) + 132
+plt.plot(i,y_)
+
 plt.title("Change of Blood Pressure")
-plt.xlim(right=24,left=0)
-plt.ylim(top=160,bottom=110)
+plt.xlim(right=24, left=0)
+plt.ylim(top=180, bottom=100)
 plt.xlabel("Time")
 plt.ylabel("Systolic BP")
 for i in range(number):
-     plt.plot(time,xl[i])
+    plt.plot(time, xl[i])
 plt.show()
 
