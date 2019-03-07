@@ -6,9 +6,10 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 import time
+import csv
 
-number=180
-seconds=6
+number=1
+seconds=3600
 np.random.seed(0)
 mu = 0
 sigma = 1
@@ -28,11 +29,14 @@ def daybyday(number):
 
 data=0
 for m in range(number):
-    data = np.random.normal(mu, sigma, 1)
-    variation=daybyday(m)+data/2
+    if m%4==0:
+        variation = daybyday(m)
     for n in range(24):
+        data = np.random.normal(mu, sigma, 1)
+        variation = variation+ data / 5
         for i in range(seconds):
-            data = np.random.normal(mu, sigma, 1)
+            if i%60==0:
+                data = np.random.normal(mu, sigma, 1)
             xl[m][n*seconds+i]=oneday(n+i/seconds,variation)+data*2.5
 
 i = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24]
@@ -49,4 +53,46 @@ plt.ylabel("Systolic BP")
 for i in range(number):
     plt.plot(time, xl[i])
 plt.show()
+
+'''dataframe=pd.DataFrame()
+csvfile = open('bloodpressure.csv', 'a', newline='')  #打开方式还可以使用file对象
+writer = csv.writer(csvfile)
+for i in range(number):
+    dataframe['DAY %s'%(i+1)]=xl[i]
+#将DataFrame存储为csv,index表示是否显示行名，default=True
+dataframe.to_csv("bloodpressure.csv",index=True,sep=',')
+csvfile.close()'''
+
+'''def mk(inputdata):
+#输入numpy数组
+    n=inputdata.shape[0]
+    var=n*(n-1)*(2*n+5)/18
+    sv=np.sqrt(var)
+    #sv为标准差
+    s=0
+    z=0
+    for i in np.arange(n):
+        if i <=(n - 1):
+            for j in np.arange(i+1,n):
+                if inputdata[j]> inputdata[i]:
+                    s=s+1
+                elif inputdata[j]< inputdata[i]:
+                    s=s-1
+                else:
+                    s=s
+    if s > 0:
+        z= (s - 1) / sv
+    elif s < 0:
+        z= (s+ 1) / sv
+    return z
+
+if __name__ == "__main__":
+    with open('bloodpressure.csv','r', encoding='UTF-8') as csvfile:
+        reader = csv.reader(csvfile)
+        bp=np.zeros(240)
+        column = [row[1] for row in reader]
+        for i in range(240):
+            bp[i]=column[8*3600+(i+1)*15]
+        m=mk(bp)
+        print(m)'''
 

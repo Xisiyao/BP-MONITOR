@@ -2,26 +2,40 @@ import matplotlib.pyplot as plt
 import numpy as np
 import time
 from math import *
+import csv
 
-x = [0,1,2,3,4,5,6]
-x = np.array(x)
-print('x is :\n',x)
-num = [0,3,1.5,1.5,5,4,5]
-y = np.array(num)
-print('y is :\n',y)
-#用3次多项式拟合
-f1 = np.polyfit(x, y, 6)
-print('f1 is :\n',f1)
-p1 = np.poly1d(f1)
-print('p1 is :\n',p1)
-#也可使用yvals=np.polyval(f1, x)
-yvals = p1(x)#拟合y值
-print('yvals is :\n',yvals)
-#绘图
-plot1 = plt.plot(x, y, 's',label='original values')
-plot2 = plt.plot(x, yvals, 'r',label='polyfit values')
-plt.xlabel('x')
-plt.ylabel('y')
-plt.legend(loc=4) #指定legend的位置右下角
-plt.title('polyfitting')
-plt.show()
+def mk(inputdata):
+#输入numpy数组
+    n=inputdata.shape[0]
+    var=n*(n-1)*(2*n+5)/18
+    sv=np.sqrt(var)
+    #sv为标准差
+    s=0
+    z=0
+    for i in np.arange(n):
+        if i <=(n - 1):
+            for j in np.arange(i+1,n):
+                if inputdata[j]> inputdata[i]:
+                    s=s+1
+                elif inputdata[j]< inputdata[i]:
+                    s=s-1
+                else:
+                    s=s
+    if s > 0:
+        z= (s - 1) / sv
+    elif s < 0:
+        z= (s+ 1) / sv
+    return z
+
+if __name__ == "__main__":
+    with open('bloodpressure.csv','r', encoding='UTF-8') as csvfile:
+        reader = csv.reader(csvfile)
+        bp=np.zeros(240)
+        column = [row[1] for row in reader]
+        for i in range(240):
+            bp[i]=column[8*3600+(i+1)*15]
+        m=mk(bp)
+        print(m)
+
+
+
