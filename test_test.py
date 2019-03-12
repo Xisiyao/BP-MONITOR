@@ -1,41 +1,38 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import time
-from math import *
+import math
 import csv
 
-def mk(inputdata):
-#输入numpy数组
-    n=inputdata.shape[0]
-    var=n*(n-1)*(2*n+5)/18
-    sv=np.sqrt(var)
-    #sv为标准差
-    s=0
-    z=0
-    for i in np.arange(n):
-        if i <=(n - 1):
-            for j in np.arange(i+1,n):
-                if inputdata[j]> inputdata[i]:
-                    s=s+1
-                elif inputdata[j]< inputdata[i]:
-                    s=s-1
-                else:
-                    s=s
-    if s > 0:
-        z= (s - 1) / sv
-    elif s < 0:
-        z= (s+ 1) / sv
-    return z
+
+def get_auto_corr(timeSeries,k):
+    '''
+    Descr:输入：时间序列timeSeries，滞后阶数k
+            输出：时间序列timeSeries的k阶自相关系数
+        l：序列timeSeries的长度
+        timeSeries1，timeSeries2:拆分序列1，拆分序列2
+        timeSeries_mean:序列timeSeries的均值
+        timeSeries_var:序列timeSeries的每一项减去均值的平方的和
+        
+    '''
+    l = len(timeSeries)
+#取出要计算的两个数组
+    timeSeries1 = timeSeries[0:l-k]
+    timeSeries2 = timeSeries[k:]
+    timeSeries_mean = timeSeries.mean()
+    timeSeries_var = np.array([i**2 for i in timeSeries-timeSeries_mean]).sum()
+    auto_corr = 0
+    for i in range(l-k):
+        temp = (timeSeries1[i]-timeSeries_mean)*(timeSeries2[i]-timeSeries_mean)/timeSeries_var
+    auto_corr = auto_corr + temp
+    return auto_corr
 
 if __name__ == "__main__":
-    with open('bloodpressure.csv','r', encoding='UTF-8') as csvfile:
-        reader = csv.reader(csvfile)
-        bp=np.zeros(240)
-        column = [row[1] for row in reader]
-        for i in range(240):
-            bp[i]=column[8*3600+(i+1)*15]
-        m=mk(bp)
-        print(m)
-
+    bp = np.zeros(240)
+    bp[0]=0
+    for i in range(240):
+        bp[i] = 3*bp[i-1]
+    result=get_auto_corr(bp,1)
+    print(result)
 
 
