@@ -6,7 +6,7 @@ class Environment:
         self.n_actions = len(self.action_space)
 
     #奖赏函数
-    def reward(self,day,T,n_on,n_off,s,illtime):
+    def reward(self,day,T,s,n_on,n_off,illtime):
         illtime=illtime-day*3600*24
         delay = 0
         energy=n_on/(n_on+n_off)
