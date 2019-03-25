@@ -24,15 +24,26 @@ def get_auto_corr(timeSeries,k):
     auto_corr = 0
     for i in range(l-k):
         temp = (timeSeries1[i]-timeSeries_mean)*(timeSeries2[i]-timeSeries_mean)/timeSeries_var
-    auto_corr = auto_corr + temp
+        auto_corr = auto_corr + temp
     return auto_corr
 
-if __name__ == "__main__":
+with open('bloodpressure.csv', 'r', encoding='UTF-8') as csvfile:
+    reader = csv.reader(csvfile)
     bp = np.zeros(240)
-    bp[0]=0
-    for i in range(240):
-        bp[i] = 3*bp[i-1]
-    result=get_auto_corr(bp,1)
+    result=np.zeros(12)
+    time=np.array([0,1,2,3,4,5,6,7,8,9,10,11])
+    column = [row[1] for row in reader]
+    for m in range(240):
+        bp[m] = column[m*15+1]
+    plt.title("Autocorrelation")
+    plt.xlim(right=12, left=0)
+    plt.ylim(top=1, bottom=0)
+    plt.xlabel("Lag order")
+    plt.ylabel("Autocorrelation")
+    for i in range(12):
+        result[i]= get_auto_corr(bp, i)
     print(result)
+    plt.plot(time,result)
+    plt.show()
 
 

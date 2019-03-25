@@ -28,7 +28,7 @@ class ColdTime:
                         data = np.random.normal(self.mu, self.sigma, 1)
                     self.xl[m][n * self.seconds + i] = self.oneday(n + i / self.seconds, variation) + data * 2.5
 
-        '''i = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]
+        i = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]
         y_ = np.zeros(25)
         for x in range(25):
             y_[x] = 0 * math.pow(x, 8) + 5.819e-06 * math.pow(x, 7) - 0.0004894 * math.pow(x, 6) + 0.0158 * math.pow(x,5) - 0.2419 * math.pow(x, 4) + 1.713 * math.pow(x, 3) - 4.118 * math.pow(x, 2) - 1.086 * math.pow(x, 1) + 132
@@ -41,7 +41,7 @@ class ColdTime:
         plt.ylabel("Systolic BP")
         for i in range(number):
             plt.plot(time, self.xl[i])
-        plt.show()'''
+        plt.show()
 
         dataframe = pd.DataFrame()
         csvfile = open('bloodpressure.csv', 'a', newline='')  # 打开方式还可以使用file对象
