@@ -43,9 +43,11 @@ def update(days):
                     increas[days_number][n] = 0
 
     s_ = np.zeros((1, 4), int)
-    Reward =0
-    delay=0
+
+
     for episode in range(0,episode_number):
+        Reward = 0
+        delay = 0
         for n in range(0, 15):
             s[n] = [n//5-1, n % 5, 5, 5]
         for days_number in range(days):
@@ -79,17 +81,18 @@ def update(days):
                         r = 0
                     else:
                         if n == 23:
-                            r,d = env.reward(days_number+1,0, s_[0][1], s_[0][2], s_[0][3], illpoint)
+                            r,d = env.reward(days_number+1,0, s_[0][1], s_[0][2], s_[0][3], s[next][2],s[next][3],illpoint)
                         else:
-                            r,d = env.reward(days_number,n+1, s_[0][1], s_[0][2], s_[0][3], illpoint)
+                            r,d = env.reward(days_number,n+1, s_[0][1], s_[0][2], s_[0][3], s[next][2],s[next][3],illpoint)
                     Reward=Reward+r
-                    delay=delay+d
+                    if d>delay:
+                        delay=d
                     RL.rl(str(s[next]), action, r, str(s_[0])) # 更新状态
                     next = (s_[0][0]+1) * 5 + s_[0][1]
                     s[next][2] = s_[0][2]
                     s[next][3] = s_[0][3]
                     break
-        y[episode] =delay/(episode+1)
+        y[episode] =delay
         if y[episode]>rewardmax:
             rewardmax=y[episode]
         print(episode,",",y[episode])
