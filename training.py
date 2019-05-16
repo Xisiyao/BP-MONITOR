@@ -12,9 +12,7 @@ def update(days):
     increas=np.zeros((days, 24), int)
     bp = np.zeros(240)
     rewardmax = 0
-    energy_sum=0
-    energy_sumb =0.5*days*24
-    energy_change=0
+    energy_sumb = 0.5 * days * 24
     for days_number in range(days):
         for n in range(0, 24):
             for second in range((days_number * 24 + n) * 3600, (days_number * 24 + n + 1) * 3600):
@@ -48,9 +46,11 @@ def update(days):
 
     s_ = np.zeros((1, 4), int)
 
-    delaytime=0
-    timeofill=0
     for episode in range(0,episode_number):
+        delaytime = 0
+        timeofill = 0
+        energy_change = 0
+        energy_sum = 0
         Reward = 0
         delay = 0
         for n in range(0, 15):
@@ -80,12 +80,13 @@ def update(days):
                             if illtime[0][second] >= 140:
                                 illpoint = second
                                 break
-                    timeofill+=1
+                        timeofill+=1
 
                     if days_number == days - 1 and n == 22:
                         next = (s_[0][0] + 1) * 5 + s_[0][1]
                         energy_change = (energy_sum+s[next][2]/(s[next][2]+s[next][3]) - energy_sumb)/days*24
                         energy_sumb = energy_sum+s[next][2]/(s[next][2]+s[next][3])
+                        energy_sum=0
 
                     if is_pass == 1:
                         r = 0

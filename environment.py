@@ -20,7 +20,7 @@ class Environment:
                     else:
                         delay=(n_on+n_off)*(m+1)-(illtime-T*3600)
                         if delay >4:
-                            re=-10
+                            re=re-1
                     break
         return re,delay
 
