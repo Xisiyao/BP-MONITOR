@@ -8,6 +8,7 @@ import math
 import csv
 
 def update(days):
+    Reward = 0
     max=np.zeros((days, 24), int)
     increas=np.zeros((days, 24), int)
     bp = np.zeros(240)
@@ -51,10 +52,9 @@ def update(days):
         timeofill = 0
         energy_change = 0
         energy_sum = 0
-        Reward = 0
         delay = 0
         for n in range(0, 15):
-            s[n] = [n//5-1, n % 5, 5, 5]
+            s[n] = [n//5-1, n % 5, 5, 0]
         for days_number in range(days):
             for n in range(0,24):
                 s_[0] = [0,-1,0,0]
@@ -84,9 +84,10 @@ def update(days):
 
                     if days_number == days - 1 and n == 22:
                         next = (s_[0][0] + 1) * 5 + s_[0][1]
-                        energy_change = (energy_sum+s[next][2]/(s[next][2]+s[next][3]) - energy_sumb)/days*24
-                        energy_sumb = energy_sum+s[next][2]/(s[next][2]+s[next][3])
-                        energy_sum=0
+                        energy_sum = energy_sum+s[next][2]/(s[next][2]+s[next][3])
+                        energy_change = 100*(energy_sum - days*24)/(days*24)
+                        energy_sumb = energy_sum
+
 
                     if is_pass == 1:
                         r = 0
@@ -106,15 +107,15 @@ def update(days):
                 if days_number == days - 1 and n == 22:
                     break
 
-        y[episode] =Reward
+        y[episode] =energy_sum
         if y[episode]>rewardmax:
             rewardmax = y[episode]
         print(episode,",",y[episode])
 
-    for episode in range(0, episode_number):
-        y[episode]=y[episode]/rewardmax
-    plt.plot(x, y)
-    plt.xlim(right=101, left=0)
+    for episode in range(0, episode_number//ibselon):
+        y_[episode]=y[episode*ibselon+ibselon-1]/rewardmax
+    plt.plot(x, y_)
+    plt.xlim(right=601, left=0)
     plt.ylim(top=1.1, bottom=0)
     plt.xlabel('Episode')
     plt.ylabel('Average Reward')
@@ -148,15 +149,17 @@ def mk(inputdata):
 
 if __name__ == "__main__":
     days=150
-    episode_number=100
+    episode_number=600
+    ibselon=20
     coti = ColdTime(days-30)
     getilltime=coti.getilltime()
     env=Environment()
     illtime=np.zeros((1,(days-30)*24*3600))
-    x=np.zeros(episode_number)
+    x=np.zeros(episode_number//ibselon)
     y = np.zeros(episode_number)
-    for i in range(episode_number):
-        x[i]=i+1
+    y_=np.zeros(episode_number//ibselon)
+    for i in range(episode_number//ibselon):
+        x[i]=i*ibselon+ibselon
 
     RL= q_learning_model(actions=list(range(env.n_actions)))
     for n in range(days-30):

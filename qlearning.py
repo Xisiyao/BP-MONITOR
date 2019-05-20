@@ -25,7 +25,7 @@ class q_learning_model:
     # 选择动作e
     def choose_action(self, s,episode):
         self.check_state_exist(s)
-        if np.random.uniform() <self. e_greedy*math.exp(-1/(episode/10+1)):
+        if (episode+1)%20==0:
             state_action = self.q_table.ix[s, :]
             state_action = state_action.reindex(np.random.permutation(state_action.index))  # 防止相同列值时取第一个列，所以打乱列的顺序
             action = state_action.idxmax()
