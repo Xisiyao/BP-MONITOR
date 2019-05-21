@@ -4,7 +4,7 @@ import math
 
 
 class q_learning_model:
-    def __init__(self, actions,e_greedy=1,learning_rate=0.01, reward_decay=0.9):
+    def __init__(self, actions,e_greedy=0.99,learning_rate=0.01, reward_decay=0.9):
         self.actions = actions
         self.learning_rate = learning_rate
         self.reward_decay = reward_decay
@@ -25,7 +25,7 @@ class q_learning_model:
     # 选择动作e
     def choose_action(self, s,episode):
         self.check_state_exist(s)
-        if (episode+1)%20==0:
+        if np.random.uniform() < self.e_greedy:
             state_action = self.q_table.ix[s, :]
             state_action = state_action.reindex(np.random.permutation(state_action.index))  # 防止相同列值时取第一个列，所以打乱列的顺序
             action = state_action.idxmax()
