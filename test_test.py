@@ -5,7 +5,6 @@ import math
 import csv
 import pandas as pd
 
-o = pd.Series([1,3,4,7])
 m=[1]
 m.append(3)
 o=o.drop(m)
