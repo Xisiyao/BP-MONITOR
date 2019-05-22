@@ -2,7 +2,7 @@ import math
 
 class Environment:
     def __init__(self):
-        self.action_space = ['（-1，-1）', '（+1，-1）', '（-1，+1）','（+1，+1）','(0,0)','(0,-1)','(0,+1)','(-1,0)','(+1,0)']
+        self.action_space = ['（-1，-1）', '（+1，-1）', '（-1，+1）','（+1，+1）','(0,0)']
         self.n_actions = len(self.action_space)
 
     #奖赏函数
@@ -11,7 +11,7 @@ class Environment:
         delay = 0
         re=0
         if energy_change<0:
-            re=-energy_change
+            re=math.exp(-energy_change)
         if s==4:
             for m in range(3600):
                 if (n_on+n_off)*m<=illtime-T*3600<(n_on+n_off)*(m+1):
@@ -34,10 +34,6 @@ class Environment:
         if action == 2:n_on = n_on -1;n_off =n_off+ 1
         if action == 3:n_on=n_on+1;n_off =n_off+1
         if action == 4: n_on = n_on ;n_off = n_off
-        if action == 5:n_on=n_on;n_off =n_off - 1
-        if action == 6:n_on = n_on;n_off =n_off +1
-        if action == 7:n_on = n_on -1;n_off =n_off
-        if action == 8:n_on=n_on+1;n_off =n_off
         if n_on <= 0 or n_on >=11 or n_off < 0 or n_off >= 11:
             n_on=a
             n_off=b

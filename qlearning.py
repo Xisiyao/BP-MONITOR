@@ -4,12 +4,13 @@ import math
 
 
 class q_learning_model:
-    def __init__(self, actions,e_greedy=0.99,learning_rate=0.01, reward_decay=0.9):
+    def __init__(self, actions,e_greedy=0.9,learning_rate=0.01, reward_decay=0.9):
         self.actions = actions
         self.learning_rate = learning_rate
         self.reward_decay = reward_decay
         self.e_greedy = e_greedy
         self.q_table = pd.DataFrame(columns=actions, dtype=np.float32)
+        self.p_actions=[]
 
     # 检查状态是否存在
     def check_state_exist(self, state):
@@ -23,14 +24,16 @@ class q_learning_model:
             )
 
     # 选择动作e
-    def choose_action(self, s,episode):
+    def choose_action(self, s,p_actions,israndom):
         self.check_state_exist(s)
-        if np.random.uniform() < self.e_greedy:
-            state_action = self.q_table.ix[s, :]
+        state_action = self.q_table.ix[s, :]
+        if len(p_actions):
+            state_action=state_action.drop(self.p_actions)
+        if israndom == 0:
             state_action = state_action.reindex(np.random.permutation(state_action.index))  # 防止相同列值时取第一个列，所以打乱列的顺序
             action = state_action.idxmax()
         else:
-            action = np.random.choice(self.actions)
+            action = np.random.choice(state_action.index)
         return action
 
     def test_choose_action(self, s):
