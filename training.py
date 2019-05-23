@@ -7,10 +7,131 @@ import pandas as pd
 import math
 import csv
 
-def update(days):
-    max=np.zeros((days, 24), int)
-    increas=np.zeros((days, 24), int)
+def update(days,values):
+    s_ = np.zeros((1, 4), int)
+    for episode in range(0,episode_number):
+        Reward=0
+        while True:
+            israndom = 1
+            if np.random.uniform() < episode / (episode +values):
+                israndom = 0
+            getout1=False
+            getout2 = False
+            delaytime = 0
+            timeofill = 0
+            energy_change = 0
+            energy_sum = 0
+            for n in range(0, 15):
+                s[n] = [n//5-1, n % 5, 5, 0]
+            for days_number in range(days):
+                for n in range(0,24):
+                    p_actions=[]
+                    s_[0] = [0,-1,0,0]
+                    s_[0][0]=increas[days_number][n]
+                    s_[0][1]=max[days_number][n]
+
+                    now=(s_[0][0]+1)*5+s_[0][1]
+                    energy_sum = energy_sum + s[now][2]/(s[now][2]+s[now][3])
+
+                    while True:
+                        action = RL['obj'+str(value)].choose_action(str(s[now]),p_actions,israndom)
+                        s_[0][2],s_[0][3],is_pass= env.change(s[now][2],s[now][3],action) # 执行这个动作得到反馈（下一个状态s 奖励r ）
+                        p_actions.append(action)
+                        if is_pass==1:
+                            break
+                    illpoint = 0
+                    if n==23:
+                        s_[0][0] = increas[days_number+1][0]
+                        s_[0][1] = max[days_number+1][0]
+                    else:
+                        s_[0][0] = increas[days_number][n + 1]
+                        s_[0][1] = max[days_number][n+1]
+
+                    if s_[0][1] == 4:
+                        for second in range((days_number * 24 + n+1) * 3600, (days_number * 24 + n + 2) * 3600):
+                            if illtime[0][second] >= 140:
+                                illpoint = second
+                                break
+                        timeofill+=1
+
+                    if days_number == days - 1 and n == 22:
+                        next = (s_[0][0] + 1) * 5 + s_[0][1]
+                        energy_sum = energy_sum+s[next][2]/(s[next][2]+s[next][3])
+                        energy_change =100*(energy_sum-days*24)/days/24
+
+                    if n == 23:
+                        r,d = env.reward(days_number+1,0, s_[0][1], s_[0][2], s_[0][3], energy_change,illpoint)
+                    else:
+                        r,d = env.reward(days_number,n+1, s_[0][1], s_[0][2], s_[0][3], energy_change,illpoint)
+                    RL['obj'+str(value)].rl(str(s[now]), action, r, str(s_[0])) # 更新状态
+                    if israndom == 0:
+                        Reward=Reward+r
+                    if d > 4:
+                        delaytime += 1
+                        Reward=0
+                        getout1=True
+                        break
+                    next = (s_[0][0]+1) * 5 + s_[0][1]
+                    s[next][2] = s_[0][2]
+                    s[next][3] = s_[0][3]
+                    if days_number == days - 1 and n == 22:
+                        break
+                if getout1==True:
+                    getout2=True
+                    break
+            if getout2==True:
+                continue
+            else:
+                y[value][episode] =Reward
+            break
+        print(episode,",",y[value][episode])
+
+def mk(inputdata):
+#输入numpy数组
+    n=inputdata.shape[0]
+    var=n*(n-1)*(2*n+5)/18
+    sv=np.sqrt(var)
+    #sv为标准差
+    s=0
+    z=0
+    for i in np.arange(n):
+        if i <=(n - 1):
+            for j in np.arange(i+1,n):
+                if inputdata[j]> inputdata[i]:
+                    s=s+1
+                elif inputdata[j]< inputdata[i]:
+                    s=s-1
+                else:
+                    s=s
+    if s > 0:
+        z= (s - 1) / sv
+    elif s < 0:
+        z= (s+ 1) / sv
+    return z
+
+if __name__ == "__main__":
+    days=5
+    episode_number=1000
+    inter=50
+    co = ['green', 'red', 'blue']
+    coti = ColdTime(days)
+    getilltime=coti.getilltime()
+    env=Environment()
+    illtime=np.zeros((1,days*24*3600))
+    x=np.zeros(episode_number//inter)
+    for i in range(episode_number//inter):
+        x[i]=(i*1)*inter
+    y = np.zeros((3,episode_number))
+    RL = {}
+    for n in range(days):
+        for m in range(24*3600):
+            illtime[0][n*24*3600+m]= getilltime[n][m]
+    s = np.zeros((15, 4),int)
+
+    max = np.zeros((days, 24), int)
+    increas = np.zeros((days, 24), int)
     bp = np.zeros(240)
+    Rewardmax = 0
     for days_number in range(days):
         for n in range(0, 24):
             for second in range((days_number * 24 + n) * 3600, (days_number * 24 + n + 1) * 3600):
@@ -42,142 +163,25 @@ def update(days):
                 else:
                     increas[days_number][n] = 0
 
-    s_ = np.zeros((1, 4), int)
-    for episode in range(0,episode_number):
-        while True:
-            getout1=False
-            getout2 = False
-            israndom=1
-            if np.random.uniform() < math.exp(-1/(episode/200+1)):
-                israndom = 0
-            delaytime = 0
-            timeofill = 0
-            energy_change = 0
-            energy_sum = 0
-            for n in range(0, 15):
-                s[n] = [n//5-1, n % 5, 5, 0]
-            for days_number in range(days):
-                for n in range(0,24):
-                    p_actions=[]
-                    s_[0] = [0,-1,0,0]
-                    s_[0][0]=increas[days_number][n]
-                    s_[0][1]=max[days_number][n]
+    for value in range(3):
+        RL['obj' + str(value)] = q_learning_model(actions=list(range(env.n_actions)))
+        update(days,50*(value+2))
+        for episode in range(0, episode_number):
+            if y[value][episode] > Rewardmax:
+                Rewardmax = y[value][episode]
 
-                    now=(s_[0][0]+1)*5+s_[0][1]
-                    energy_sum = energy_sum + s[now][2]/(s[now][2]+s[now][3])
-
-                    while True:
-                        action = RL.choose_action(str(s[now]),p_actions,episode)
-                        s_[0][2],s_[0][3],is_pass= env.change(s[now][2],s[now][3],action) # 执行这个动作得到反馈（下一个状态s 奖励r ）
-                        p_actions.append(action)
-                        if is_pass==1:
-                            break
-                    illpoint = 0
-                    if n==23:
-                        s_[0][0] = increas[days_number+1][0]
-                        s_[0][1] = max[days_number+1][0]
-                    else:
-                        s_[0][0] = increas[days_number][n + 1]
-                        s_[0][1] = max[days_number][n+1]
-
-                    if s_[0][1] == 4:
-                        for second in range((days_number * 24 + n+1) * 3600, (days_number * 24 + n + 2) * 3600):
-                            if illtime[0][second] >= 140:
-                                illpoint = second
-                                break
-                        timeofill+=1
-
-                    if days_number == days - 1 and n == 22:
-                        next = (s_[0][0] + 1) * 5 + s_[0][1]
-                        energy_sum = energy_sum+s[next][2]/(s[next][2]+s[next][3])
-                        energy_change =100*(energy_sum-days*24)/days/24
-
-                    if n == 23:
-                        r,d = env.reward(days_number+1,0, s_[0][1], s_[0][2], s_[0][3], energy_change,illpoint)
-                    else:
-                        r,d = env.reward(days_number,n+1, s_[0][1], s_[0][2], s_[0][3], energy_change,illpoint)
-                    RL.rl(str(s[now]), action, r, str(s_[0])) # 更新状态
-                    if d > 4:
-                        delaytime += 1
-                        getout1=True
-                        break
-                    next = (s_[0][0]+1) * 5 + s_[0][1]
-                    s[next][2] = s_[0][2]
-                    s[next][3] = s_[0][3]
-                    if days_number == days - 1 and n == 22:
-                        break
-                if getout1==True:
-                    getout2=True
-                    break
-            if getout2==True:
-                continue
-            else:
-                y[episode] = energy_sum
-            break
-        print(episode,",",y[episode])
-
-    for episode in range(0, episode_number//inter):
-        y_[episode]=y[(episode+1)*inter-1]/(24*days)
-    plt.plot(x, y_)
+    for value in range(3):
+        y_ = np.zeros(episode_number // inter)
+        for episode in range(0, episode_number// inter):
+            y_[episode] = math.log(y[value][(episode + 1) * inter - 1]) / math.log(Rewardmax)
+        plt.plot(x, y_, color=co[value], label='value is %s' % (50*(value+2)))
     plt.xlim(right=episode_number+1, left=0)
     plt.ylim(top=1.1, bottom=0)
     plt.xlabel('Episode')
-    plt.ylabel('Average Reward')
-    plt.title('Number of Episode=600')
+    plt.ylabel('Reward')
+    plt.title('Number of Episode=3000')
+    plt.legend()
     plt.show()
-
-def mk(inputdata):
-#输入numpy数组
-    n=inputdata.shape[0]
-    var=n*(n-1)*(2*n+5)/18
-    sv=np.sqrt(var)
-    #sv为标准差
-    s=0
-    z=0
-    for i in np.arange(n):
-        if i <=(n - 1):
-            for j in np.arange(i+1,n):
-                if inputdata[j]> inputdata[i]:
-                    s=s+1
-                elif inputdata[j]< inputdata[i]:
-                    s=s-1
-                else:
-                    s=s
-    if s > 0:
-        z= (s - 1) / sv
-    elif s < 0:
-        z= (s+ 1) / sv
-    return z
-
-
-
-if __name__ == "__main__":
-    days=5
-    episode_number=1000
-    inter=5
-    coti = ColdTime(days)
-    getilltime=coti.getilltime()
-    env=Environment()
-    illtime=np.zeros((1,days*24*3600))
-    x=np.zeros(episode_number//inter)
-    y = np.zeros(episode_number)
-    y_=np.zeros(episode_number//inter)
-    for i in range(episode_number//inter):
-        x[i]=(i+1)*inter
-
-    RL= q_learning_model(actions=list(range(env.n_actions)))
-    for n in range(days):
-        for m in range(24*3600):
-            illtime[0][n*24*3600+m]= getilltime[n][m]
-    s = np.zeros((15, 4),int)
-    update(days)
-#显示所有列
-    pd.set_option('display.max_columns', None)
-#显示所有行
-    pd.set_option('display.max_rows', None)
-#设置value的显示长度为100，默认为50
-    pd.set_option('max_colwidth',100)
-    print(RL.q_table)
 
 
 
