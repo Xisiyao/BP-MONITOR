@@ -28,14 +28,9 @@ class Environment:
     def change(self, n_on,n_off,action):
         a=n_on
         b=n_off
-        is_pass=1
         if action == 0:n_on=n_on-1;n_off =n_off - 1
         if action == 1:n_on = n_on+1;n_off =n_off - 1
         if action == 2:n_on = n_on -1;n_off =n_off+ 1
         if action == 3:n_on=n_on+1;n_off =n_off+1
         if action == 4: n_on = n_on ;n_off = n_off
-        if n_on <= 0 or n_on >=11 or n_off < 0 or n_off >= 11:
-            n_on=a
-            n_off=b
-            is_pass=0
-        return n_on,n_off,is_pass
+        return n_on,n_off

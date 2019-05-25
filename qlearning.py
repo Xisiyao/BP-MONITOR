@@ -10,7 +10,6 @@ class q_learning_model:
         self.reward_decay = reward_decay
         self.e_greedy = e_greedy
         self.q_table = pd.DataFrame(columns=actions, dtype=np.float32)
-        self.p_actions=[]
 
     # 检查状态是否存在
     def check_state_exist(self, state):
@@ -24,12 +23,12 @@ class q_learning_model:
             )
 
     # 选择动作e
-    def choose_action(self, s,p_actions,israndom):
+    def choose_action(self, s,p_actions,episode,values):
         self.check_state_exist(s)
         state_action = self.q_table.ix[s, :]
         if len(p_actions):
-            state_action=state_action.drop(self.p_actions)
-        if israndom==0:
+            state_action=state_action.drop(p_actions)
+        if np.random.uniform() <0.99:
             state_action = state_action.reindex(np.random.permutation(state_action.index))  # 防止相同列值时取第一个列，所以打乱列的顺序
             action = state_action.idxmax()
         else:
