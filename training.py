@@ -10,11 +10,11 @@ import csv
 def update(days,values):
     s_ = np.zeros((1, 4), int)
     for episode in range(0,episode_number):
-        Reward=0
+        delaytime = 0
         while True:
+            Reward = 0
             getout1=False
             getout2 = False
-            delaytime = 0
             timeofill = 0
             energy_change = 0
             energy_sum = 0
@@ -43,7 +43,7 @@ def update(days,values):
                         for i in p_actions:
                             if i not in new_p:
                                 new_p.append(i)
-                        action = RL.choose_action(str(s[now]),new_p,episode,values)
+                        action = RL['obj'+str(e)].choose_action(str(s[now]),new_p,episode,values)
                         s_[0][2],s_[0][3]= env.change(s[now][2],s[now][3],action) # 执行这个动作得到反馈（下一个状态s 奖励r ）
                         break
                     illpoint = 0
@@ -67,13 +67,14 @@ def update(days,values):
                         energy_change =100*(energy_sum-days*24)/days/24
 
                     if n == 23:
-                        r,d = env.reward(days_number+1,0, s_[0][1], s_[0][2], s_[0][3], energy_change,illpoint)
+                        r,d = env.reward(days_number+1,0, s_[0][1], s_[0][2], s_[0][3],energy_change,illpoint)
                     else:
                         r,d = env.reward(days_number,n+1, s_[0][1], s_[0][2], s_[0][3], energy_change,illpoint)
-                    RL.rl(str(s[now]), action, r, str(s_[0])) # 更新状态
+                    RL['obj' + str(e)].rl(str(s[now]), action, r, str(s_[0])) # 更新状态
                     Reward=Reward+r
                     if d > 4:
                         delaytime += 1
+                        print("bullshit!**",delaytime)
                         getout1=True
                         break
                     next = (s_[0][0]+1) * 5 + s_[0][1]
@@ -87,9 +88,9 @@ def update(days,values):
             if getout2==True:
                 continue
             else:
-                y[episode] =Reward
+                y[e][episode] =Reward
             break
-        print(episode,",",y[episode])
+        print(episode,",",y[e][episode])
 
 def mk(inputdata):
 #输入numpy数组
@@ -115,18 +116,18 @@ def mk(inputdata):
     return z
 
 if __name__ == "__main__":
-    days=5
+    days=1
     episode_number=1000
-    inter=50
+    inter=25
+    e_number=3
     coti = ColdTime(days)
     getilltime=coti.getilltime()
     env=Environment()
-    RL = q_learning_model(actions=list(range(env.n_actions)))
     illtime=np.zeros((1,days*24*3600))
     x=np.zeros(episode_number//inter)
     for i in range(episode_number//inter):
         x[i]=(i*1)*inter
-    y = np.zeros(episode_number)
+    y = np.zeros((e_number,episode_number))
     for n in range(days):
         for m in range(24*3600):
             illtime[0][n*24*3600+m]= getilltime[n][m]
@@ -167,20 +168,34 @@ if __name__ == "__main__":
                 else:
                     increas[days_number][n] = 0
 
-    update(days,1)
-    for episode in range(0, episode_number):
-        if y[episode] > Rewardmax:
-            Rewardmax = y[episode]
-    y_ = np.zeros(episode_number // inter)
-    for episode in range(0, episode_number// inter):
-        y_[episode] = math.log(y[(episode + 1) * inter - 1]) / math.log(Rewardmax)
-    plt.plot(x, y_)
+    RL = {}
+    co = ['green', 'red', 'blue']
+    for e in range(e_number):
+        RL['obj' + str(e)]  = q_learning_model(actions=list(range(env.n_actions)))
+        update(days, 0.1*((10)**e))
+        for episode in range(0, episode_number):
+            if y[e][episode] > Rewardmax:
+                Rewardmax = y[e][episode]
+    for e in range(e_number):
+        y_ = np.zeros(episode_number // inter)
+        for episode in range(0, episode_number // inter):
+            y_[episode] = math.log(y[e][episode * inter]) / math.log(Rewardmax)
+        plt.plot(x, y_, color=co[e], label='value is %s' % (0.1*(10 ** e)))
+
     plt.xlim(right=episode_number + 1, left=0)
     plt.ylim(top=1.1, bottom=0)
     plt.xlabel('Episode')
     plt.ylabel('Reward')
-    plt.title('Number of Episode=3000')
+    plt.title('Number of Episode=%s'% episode_number)
+    plt.legend()
+    plt.savefig('Reward.png')
     plt.show()
+
+
+
+
+
+
 
 
 
