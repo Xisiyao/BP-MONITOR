@@ -16,11 +16,11 @@ def update(days,values):
             getout1=False
             getout2 = False
             timeofill = 0
-            energy_change = 0
+            delaymax = 0
             energy_sum = 0
             for n in range(0, 15):
                 s[n] = [n//5-1, n % 5, 5, 0]
-            for days_number in range(days):
+            for days_number in range(0+150*season,days+150*season):
                 for n in range(0,24):
                     p_actions=[]
                     new_p = []
@@ -43,7 +43,7 @@ def update(days,values):
                         for i in p_actions:
                             if i not in new_p:
                                 new_p.append(i)
-                        action = RL['obj'+str(e)].choose_action(str(s[now]),new_p,episode,values)
+                        action = RL.choose_action(str(s[now]),new_p,episode,values)
                         s_[0][2],s_[0][3]= env.change(s[now][2],s[now][3],action) # 执行这个动作得到反馈（下一个状态s 奖励r ）
                         break
                     illpoint = 0
@@ -64,14 +64,16 @@ def update(days,values):
                     if days_number == days - 1 and n == 22:
                         next = (s_[0][0] + 1) * 5 + s_[0][1]
                         energy_sum = energy_sum+s[next][2]/(s[next][2]+s[next][3])
-                        energy_change =100*(energy_sum-days*24)/days/24
+                        #energy_change =100*(energy_sum-days*24)/days/24
 
                     if n == 23:
-                        r,d = env.reward(days_number+1,0, s_[0][1], s_[0][2], s_[0][3],energy_change,illpoint)
+                        r,d = env.reward(days_number+1,0, s_[0][1], s_[0][2], s_[0][3],s[now][2],s[now][3],illpoint)
                     else:
-                        r,d = env.reward(days_number,n+1, s_[0][1], s_[0][2], s_[0][3], energy_change,illpoint)
-                    RL['obj' + str(e)].rl(str(s[now]), action, r, str(s_[0])) # 更新状态
+                        r,d = env.reward(days_number,n+1, s_[0][1], s_[0][2], s_[0][3], s[now][2],s[now][3],illpoint)
+                    RL.rl(str(s[now]), action, r, str(s_[0])) # 更新状态
                     Reward=Reward+r
+                    if delaymax<d:
+                        delaymax=d
                     if d > 4:
                         delaytime += 1
                         print("bullshit!**",delaytime)
@@ -88,10 +90,9 @@ def update(days,values):
             if getout2==True:
                 continue
             else:
-                y[e][episode] =Reward
+                y[season][episode] =energy_sum/(days*24)
             break
-        print(episode,",",y[e][episode])
-
+        print(episode,",",y[season][episode])
 def mk(inputdata):
 #输入numpy数组
     n=inputdata.shape[0]
@@ -116,28 +117,29 @@ def mk(inputdata):
     return z
 
 if __name__ == "__main__":
-    days=1
-    episode_number=1000
-    inter=25
+    dayssum=180
+    days=5
+    episode_number=200
+    inter=5
     e_number=3
-    coti = ColdTime(days)
+    coti = ColdTime(dayssum)
     getilltime=coti.getilltime()
     env=Environment()
-    illtime=np.zeros((1,days*24*3600))
+    illtime=np.zeros((1,dayssum*24*3600))
     x=np.zeros(episode_number//inter)
     for i in range(episode_number//inter):
         x[i]=(i*1)*inter
     y = np.zeros((e_number,episode_number))
-    for n in range(days):
+    for n in range(dayssum):
         for m in range(24*3600):
             illtime[0][n*24*3600+m]= getilltime[n][m]
     s = np.zeros((15, 4),int)
 
-    max = np.zeros((days, 24), int)
-    increas = np.zeros((days, 24), int)
+    max = np.zeros((dayssum, 24), int)
+    increas = np.zeros((dayssum, 24), int)
     bp = np.zeros(240)
     Rewardmax = 0
-    for days_number in range(days):
+    for days_number in range(dayssum):
         for n in range(0, 24):
             for second in range((days_number * 24 + n) * 3600, (days_number * 24 + n + 1) * 3600):
                 if illtime[0][second] > max[days_number][n]:
@@ -168,27 +170,41 @@ if __name__ == "__main__":
                 else:
                     increas[days_number][n] = 0
 
-    RL = {}
+    '''RL = {}
     co = ['green', 'red', 'blue']
     for e in range(e_number):
         RL['obj' + str(e)]  = q_learning_model(actions=list(range(env.n_actions)))
-        update(days, 0.1*((10)**e))
+        update(days, 5+10*e)
         for episode in range(0, episode_number):
             if y[e][episode] > Rewardmax:
                 Rewardmax = y[e][episode]
     for e in range(e_number):
         y_ = np.zeros(episode_number // inter)
         for episode in range(0, episode_number // inter):
-            y_[episode] = math.log(y[e][episode * inter]) / math.log(Rewardmax)
-        plt.plot(x, y_, color=co[e], label='value is %s' % (0.1*(10 ** e)))
+            y_[episode] =y[e][episode * inter]
+        plt.plot(x, y_, color=co[e], label='value is %s' % (5+10*e))'''
+
+    RL = q_learning_model(actions=list(range(env.n_actions)))
+    co = [ 'red','green']
+    seasons=['summer', 'winter']
+    for season in range(2):
+        update(days, 15)
+        for episode in range(0, episode_number):
+            if y[season][episode] > Rewardmax:
+                Rewardmax = y[season][episode]
+    for season in range(2):
+        y_ = np.zeros(episode_number // inter)
+        for episode in range(0, episode_number // inter):
+            y_[episode] = y[season][episode * inter]
+        plt.plot(x, y_, color=co[season], label= seasons[season])
 
     plt.xlim(right=episode_number + 1, left=0)
     plt.ylim(top=1.1, bottom=0)
     plt.xlabel('Episode')
-    plt.ylabel('Reward')
-    plt.title('Number of Episode=%s'% episode_number)
+    plt.ylabel('Energy Consumption')
+    plt.title('Energy Consumption in diffirent seasons')
     plt.legend()
-    plt.savefig('Reward.png')
+    plt.savefig('Energy Consumption in different seasons.png')
     plt.show()
 
 
