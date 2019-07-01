@@ -20,7 +20,7 @@ def update(days,values):
             energy_sum = 0
             for n in range(0, 15):
                 s[n] = [n//5-1, n % 5, 5, 0]
-            for days_number in range(0+150*season,days+150*season):
+            for days_number in range(0+150*0,days+150*0):
                 for n in range(0,24):
                     p_actions=[]
                     new_p = []
@@ -32,9 +32,9 @@ def update(days,values):
                     energy_sum = energy_sum + s[now][2]/(s[now][2]+s[now][3])
 
                     while True:
-                        if s[now][2]==10:
+                        if s[now][2]==20:
                             p_actions.extend([1,3])
-                        if s[now][3]==10:
+                        if s[now][3]==20:
                             p_actions.extend([2, 3])
                         if s[now][2] == 1:
                             p_actions.extend([0, 2])
@@ -43,7 +43,7 @@ def update(days,values):
                         for i in p_actions:
                             if i not in new_p:
                                 new_p.append(i)
-                        action = RL.choose_action(str(s[now]),new_p,episode,values)
+                        action = RL['obj' + str(season)].choose_action(str(s[now]),new_p,episode,values)
                         s_[0][2],s_[0][3]= env.change(s[now][2],s[now][3],action) # 执行这个动作得到反馈（下一个状态s 奖励r ）
                         break
                     illpoint = 0
@@ -70,11 +70,11 @@ def update(days,values):
                         r,d = env.reward(days_number+1,0, s_[0][1], s_[0][2], s_[0][3],s[now][2],s[now][3],illpoint)
                     else:
                         r,d = env.reward(days_number,n+1, s_[0][1], s_[0][2], s_[0][3], s[now][2],s[now][3],illpoint)
-                    RL.rl(str(s[now]), action, r, str(s_[0])) # 更新状态
+                    RL['obj' + str(season)].rl(str(s[now]), action, r, str(s_[0])) # 更新状态
                     Reward=Reward+r
                     if delaymax<d:
                         delaymax=d
-                    if d > 4:
+                    if d > delaylimit:
                         delaytime += 1
                         print("bullshit!**",delaytime)
                         getout1=True
@@ -117,14 +117,15 @@ def mk(inputdata):
     return z
 
 if __name__ == "__main__":
+    delaylimit=8
     dayssum=180
-    days=5
-    episode_number=200
+    days=30
+    episode_number=300
     inter=5
     e_number=3
     coti = ColdTime(dayssum)
     getilltime=coti.getilltime()
-    env=Environment()
+    env=Environment(delaylimit)
     illtime=np.zeros((1,dayssum*24*3600))
     x=np.zeros(episode_number//inter)
     for i in range(episode_number//inter):
@@ -169,11 +170,11 @@ if __name__ == "__main__":
                     increas[days_number][n] = 1
                 else:
                     increas[days_number][n] = 0
-
-    '''RL = {}
+    '''
+    RL = {}
     co = ['green', 'red', 'blue']
     for e in range(e_number):
-        RL['obj' + str(e)]  = q_learning_model(actions=list(range(env.n_actions)))
+        RL['obj' + str(e)] = q_learning_model(actions=list(range(env.n_actions)))
         update(days, 5+10*e)
         for episode in range(0, episode_number):
             if y[e][episode] > Rewardmax:
@@ -182,12 +183,14 @@ if __name__ == "__main__":
         y_ = np.zeros(episode_number // inter)
         for episode in range(0, episode_number // inter):
             y_[episode] =y[e][episode * inter]
-        plt.plot(x, y_, color=co[e], label='value is %s' % (5+10*e))'''
+        plt.plot(x, y_,color=co[e], label='value is %s' % (5+10*e))
+    '''
 
-    RL = q_learning_model(actions=list(range(env.n_actions)))
+    RL = {}
     co = [ 'red','green']
     seasons=['summer', 'winter']
     for season in range(2):
+        RL['obj' + str(season)] = q_learning_model(actions=list(range(env.n_actions)))
         update(days, 15)
         for episode in range(0, episode_number):
             if y[season][episode] > Rewardmax:
@@ -202,10 +205,12 @@ if __name__ == "__main__":
     plt.ylim(top=1.1, bottom=0)
     plt.xlabel('Episode')
     plt.ylabel('Energy Consumption')
-    plt.title('Energy Consumption in diffirent seasons')
+    plt.title('Energy Consumption in Different Season')
     plt.legend()
-    plt.savefig('Energy Consumption in different seasons.png')
+    plt.savefig('Energy Consumption in Different Season.png')
     plt.show()
+
+
 
 
 

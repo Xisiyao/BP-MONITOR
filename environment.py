@@ -1,9 +1,10 @@
 import math
 
 class Environment:
-    def __init__(self):
+    def __init__(self,delaylimit):
         self.action_space = ['（-1，-1）', '（+1，-1）', '（-1，+1）','（+1，+1）','(0,0)']
         self.n_actions = len(self.action_space)
+        self.delaylimit=delaylimit
 
     #奖赏函数
     def reward(self,day,T,s,n_on,n_off,n_onb,n_offb,illtime):
@@ -18,7 +19,7 @@ class Environment:
                         delay=0
                     else:
                         delay=(n_on+n_off)*(m+1)-(illtime-T*3600)
-                        if delay >4:
+                        if delay >self.delaylimit:
                             re=-10
                     break
         return re,delay
